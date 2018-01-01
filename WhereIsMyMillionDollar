@@ -1,0 +1,336 @@
+/* WhereIsMyMillionDollar
+Duy Anh Nguyen
+November 10, 2017
+This program is the "Computer Science" version of "Deal or No Deal".
+There will be 10 cases assigned with different amount of money: $1, $5, $10, $50, $100, $1000, $10000, $100000, $500000, $1000000
+Player will then be ask to choose 1 of the 10 cases.
+Player then will be ask to pick 3 cases whose value will be revealed.
+After the player choose the 3 cases to revealed, he/her will get a call from "The Banker" who will make an offer.
+( Sum of all un-revealed cases money include the case player choose and divide by the number of un-revealed cases ) is how the banker make offer.
+The player then have 2 options: Continue the game by picking 3 more cases to revealed and keeping their case, or take the offer and leave the case they choose.
+All cases' money will be reveal at the end of the program.
+Process:
+ - Introduce player to how the game works.
+    - Assign money to randomly to 10 cases. ( $1, $5, $10, $50, $100, $1000, $10000, $100000, $500000, $1000000 )
+    - Get input: Ask the player to choose a case.
+    - Get input: Ask the player to choose 3 cases to revealed.
+    - Bank offer.
+        + Sum of all un-revealed cases money include the case player choose and divide by the number of un-revealed cases include the case player choose.
+    - Get input: Player get to choose the option to continue the game or take the offer.
+    - Reveal all the cases.
+ - Print result.
+*/
+
+// Pre-Processor directive:
+#include <iostream>
+#include <conio.h>
+#include <time.h>
+#include <string>
+#include <Windows.h>
+#include "colours.h"
+using namespace std;
+
+// Function prototype:
+void seed_random(void);                                                 // Seed random generator for random number
+void ClearScreen(void);                                                 // Clear screen like system("cls")
+void Pause(void);                                                       // Print pause point like system("pause")
+void introduce(void);                                                   // Introduce the player to the game and how this game works
+void assign_money(int cases[10], bool case_avail[10]);                  // Assign money randomly to the cases
+void play_game(const int CASES[10], bool case_avail[10]);               // Play the game
+void reveal_cases(const int cases[10]);                                 // Reveal all the cases in the end
+int check_inputcase(const bool CASE_AVAIL[10], const int PLAYER_CASE);  // Ensure the user choose/pick 1 of the 10 cases and it had not yet been picked
+int no_SameCase(bool case_avail[10]);                                   // Ensure no case get assign money twice
+int Bank_Offer(const int cases[10], bool case_avail[10]);               // The banker make an offer
+
+// Main program
+int main(void)
+{
+	// Local variable dictionary:
+	int cases[10];                        // The 10 cases
+	bool case_avail[10] = { false };      // Keep track of cases that have been revealed or not ( True means case is still not reveal, false means case had revealed )
+
+	 /* Program */
+	introduce();                     // Introduce to the player - Some rules and how to play
+
+	assign_money(cases, case_avail); // Assign different amount of money to random case
+
+	play_game(cases, case_avail);    // Play the game
+
+	// Return
+	text_colour(f_gray, b_black); // Return colour
+	return 0;
+} // Main
+
+
+ /* Function */
+/* seed_random(void) - This function will seed the random generator for random number.
+*/
+void seed_random(void)
+{
+	// Local variable dictionary:
+	int i;                // Loop counter
+
+	// Seed the random number generator use the timer
+	srand((unsigned)time(NULL));
+	for (i = 0; i<rand(); i++)
+		rand();
+} // seed_random(void)
+
+
+/* ClearScreen(void) - This function will clear the screen like system("cls").
+*/
+void ClearScreen(void)
+{
+	cout << string(3, '\n');
+} // ClearScreen(void)
+
+
+/* Pause(void) - This function will print pause point like system("pause").
+*/
+void Pause(void)
+{
+	text_colour(f_gray, b_black); // Colour
+	cout << "Press any key to continue...";
+	_getch();
+	text_colour(f_white, b_black); // Reset colour
+	ClearScreen();
+} // Pause(void)
+
+
+/* introduce(void) - This function will introduce the player to this program/game/rules.
+*/
+void introduce(void)
+{
+	text_colour(f_white, b_black); // Colour
+	cout << "This program is the \"Computer Science\" version of \"Deal or No Deal\"." << endl;
+	text_colour(f_green, b_black); // Colour
+	cout << "There will be 10 cases assigned with different amount of money : $1, $5, $10, $50, $100, $1000, $10000, $100000, $500000, $1000000" << endl;
+	text_colour(f_white, b_black); // Colour
+	cout << "Player will then be ask to choose 1 of the 10 cases." << endl;
+	cout << "Player then will be ask to pick 3 cases whose value will be revealed." << endl;
+	text_colour(f_yellow, b_black); // Colour
+	cout << "After the player choose the 3 cases to revealed, he/her will get a call from \"The Banker\" who will make an offer." << endl;
+	cout << "(Sum of all un - revealed cases money include the case player choose and divide by the number of un - revealed cases) is how the banker make offer." << endl;
+	text_colour(f_white, b_black); // Colour
+	cout << "The player then have 2 options :" << endl;
+	cout << "    + Continue the game by picking 3 more cases to revealed and keeping their case." << endl;
+	cout << "    + Take the offer and leave the case they choose." << endl;
+	text_colour(f_white, b_black); // Colour
+	cout << "All cases' money will be reveal at the end of the program." << endl;
+	Pause();
+	text_colour(f_white, b_black); // Colour
+} // introduce(void)
+
+
+/* assign_money(int[], bool[]) - This function will randomly assign different amount of money to different cases.
+Parameter:
++ cases - The cases that contain money inside.
++ case_avail - Keep track of cases that been reveal/assign.
+*/
+void assign_money(int cases[10], bool case_avail[10])
+{
+	seed_random();
+	// Assign $1,000,000
+	cases[no_SameCase(case_avail)] = 1000000;
+	// Assign $500,000
+	cases[no_SameCase(case_avail)] = 500000;
+	// Assign $100,000
+	cases[no_SameCase(case_avail)] = 100000;
+	// Assign $10,000
+	cases[no_SameCase(case_avail)] = 10000;
+	// Assign $1,000
+	cases[no_SameCase(case_avail)] = 1000;
+	// Assign $100
+	cases[no_SameCase(case_avail)] = 100;
+	// Assign $50
+	cases[no_SameCase(case_avail)] = 50;
+	// Assign $10
+	cases[no_SameCase(case_avail)] = 10;
+	// Assign $5
+	cases[no_SameCase(case_avail)] = 5;
+	// Assign $1
+	cases[no_SameCase(case_avail)] = 1;
+} // assign_money(int[], bool[])
+
+
+/* play_game(const int[], bool[]) - This function will do the game process.
+Parameter:
++ CASES - The money from 10 cases.
++ case_avail - Keep track of cases that have been revealed or not.
+*/
+void play_game(const int CASES[10], bool case_avail[10])
+{
+	// Local variable dictionary:
+	int player_case = 0;          // The case player choose
+	int reveal_case;              // The case player want to reveal
+	char choice;                  // Player's choice to continue to play or take the offer
+
+	// Get input - The case choose by player
+	text_colour(f_white, b_black); // Colour
+	cout << "What case do you want? ";
+	player_case = check_inputcase(case_avail, player_case);
+	ClearScreen();
+
+	// Loop max three time only break if the player want to take the offer
+	for (int counter = 1; counter <= 3; counter++)
+	{
+		// Player have to reveal 3 cases
+		text_colour(f_white, b_black); // Colour
+		cout << "You now have to pick 3 cases to reveal!" << endl;
+		for (int count = 1; count <= 3; count++)
+		{
+			// Get input - THe case player want to reveal
+			text_colour(f_white, b_black); // Colour
+			cout << "Reveal case: ";
+			reveal_case = check_inputcase(case_avail, player_case);
+			// Reveal the case
+			text_colour(f_green, b_black); // Colour
+			cout << "Case " << reveal_case << " has $" << CASES[reveal_case - 1] << endl;
+			case_avail[reveal_case - 1] = false;
+		} // For
+		// Quit after pick 9 cases - The last case is plaer's case
+		if (counter == 3)
+			break;
+		else
+			ClearScreen();
+
+		// The banker offer
+		text_colour(f_green, b_black); // Colour
+		cout << "The banker is offering you $" << Bank_Offer(CASES, case_avail);
+		cout << " - DEAL OR NO DEAL (D/N)? ";
+		choice = toupper(_getch());
+		text_colour(f_red, b_black); // Colour
+		cout << choice << endl;
+		// Get Player's choice and validate
+		while (choice != 'D' && choice != 'N')
+		{
+			text_colour(f_red, b_black); // Colour
+			cout << "INVALID CHOICE! ";
+			text_colour(f_dred, b_black); // Colour
+			cout << "Please re-enter your choice (D/N): ";
+			choice = toupper(_getch());
+			cout << choice << endl;
+		} // While
+		ClearScreen();
+
+		// If player chose to take the offer, end the game and print the money player got
+		if (choice == 'D')
+		{
+			// Reveal all the cases
+			reveal_cases(CASES);
+			// Print the final money player got
+			text_colour(f_green, b_black); // Colour
+			cout << "You get $" << Bank_Offer(CASES, case_avail) << ", ";
+			cout << "and your case ( case " << player_case << " ) contained... $" << CASES[player_case - 1] << endl;
+			case_avail[player_case - 1] = false; // Reveal player's case
+			Pause();
+			break; // End the game
+		} // If
+	} // For
+	ClearScreen();
+
+	// If the player's case is still not reveal yet, it means every other case have revealed and the user case is what player earn
+	if (case_avail[player_case - 1] == true)
+	{
+		// Reveal all the cases
+		reveal_cases(CASES);
+		// Print the final money player got
+		text_colour(f_green, b_black); // Colour
+		cout << "Your case ( case " << player_case << " ) contained... $" << CASES[player_case - 1] << endl;
+		cout << "You leave with $" << CASES[player_case - 1] << endl;
+		Pause();
+	} // If
+	text_colour(f_white, b_black); // Reset colour
+} // play_game(const int[], bool[])
+
+
+/* reveal_cases(const int[]) - This function will reveal all the cases in the end.
+Parameter:
++ CASES - The ases that contain money inside
+*/
+void reveal_cases(const int CASES[10])
+{
+	text_colour(f_yellow, b_black); // Colour
+	cout << "Reveal all the cases:" << endl;
+	for (int counter = 0; counter < 10; counter++)
+	{
+		cout << "Case #" << (counter + 1) << ": " << CASES[counter] << endl;
+	} // For
+	text_colour(f_white, b_black); // Reset colour
+} // reveal_cases(const int[])
+
+
+/* check_inputcase(const bool[], const int) - This function will ensure the player to enter 1 one the 10 cases.
+Parameter:
++ CASE_AVAIL - Keep track of cases that been reveal/assign.
++ PLAYER_CASE - The case player chose.
+*/
+int check_inputcase(const bool CASE_AVAIL[10], const int PLAYER_CASE)
+{
+	int input;    // Player's input
+	text_colour(f_green, b_black); // Colour
+	cin >> input;
+	// Validation
+	while (cin.fail() || input <= 0 || input > 10 || CASE_AVAIL[input - 1] == false || input == PLAYER_CASE)
+	{
+		if (cin.fail())
+			cin.clear(); // Clear error
+		cin.ignore(255, '\n'); // Clean out remainder of input line
+
+		// Re-enter input
+		text_colour(f_red, b_black); // Colour
+		cout << "INVALID INPUT! ";
+		text_colour(f_dred, b_black); // Colour
+		cout << "Please re-enter the case: ";
+		text_colour(f_white, b_black);
+		cin >> input;
+	} // While
+
+	// Return - Input
+	text_colour(f_white, b_black); // Reset Colour
+	return input;
+} // check_inputcase(const bool[], const int)
+
+
+/* no_sameCase(bool []) - This function will ensure it does not assign 1 case twice.
+Parameter:
++ case_avail - Keep track of cases that been reveal/assign.
+*/
+int no_SameCase(bool case_avail[10])
+{
+	int random = rand() % 10;    // The random case to assign money in
+	while (case_avail[random] == true)
+	{
+		random = rand() % 10;
+	} // While
+	// Set the case available to assign money
+	case_avail[random] = true;
+
+	// Return - The random case number
+	return random;
+} // no_SameCase(bool[])
+
+
+/* Bank_Offer(const int[], bool[]) - This function will calculate the bank offer and return it.
++ CASES - The cases that contain money inside.
++ case_avail - Keep track of cases that been reveal/assign.
+*/
+int Bank_Offer(const int CASES[10], bool case_avail[10])
+{
+	// Local variable dictionary:
+	int sum = 0;                // The money sum of all cases that have not been reveal
+	int ncase_NotReveal = 0;    // Number of cases that have not been reveal
+
+	// Add the money of all the cases that have not been reveal
+	for (int counter = 0; counter < 10; counter++)
+	{
+		if (case_avail[counter] == true)
+		{
+			sum += CASES[counter];
+			ncase_NotReveal++;
+		} // If
+	} // For
+
+	// Return - The banker's offer
+	return sum / ncase_NotReveal;
+} // Bank_Offer(const int[], bool[])
