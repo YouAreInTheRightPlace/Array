@@ -1,0 +1,561 @@
+/* CardWar
+Duy Anh Nguyen
+November 28, 2017
+This program will simulate the card game called war.
+Two players divide the card randomly into two sets ( 26 cards ).
+Then they will flip the top card together, player who flip the higher card value will takes both cards and put them on the bottom of the deck.
+ NOTE: If the cards are the same value, it is war. Both player will put one card face down and another face up, player with higher face up card take all the card of that round.
+    If the two cards are continue to be the same, repeat this process.
+Card rank: 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A.
+The game end when one player run out of card to play.
+There will be two modes:
+    i. (I)nput mode - Update information after each round.
+   ii. (N)o nput mode - Run the game without interruption and gives result at the end.
+Process:
+ - Introduce to the game.
+ - Get input - Mode.
+ - Get input - Number of round
+ - Divide the deck into two set randomly.
+ - Start the game based on mode:
+    - Print round. ( A round only consisder end when there is a winner of that round )
+    - Both player flip their top card.
+        + Higher take both cards and place it on the bottom of the deck.
+        + Tie ( WAR TIME ).
+            + Place a card face down.
+            + Place a card face up. Player who get the higher card win the round
+                NOTE: If the card still tie, repeat the "WAR" process.
+ - Print final result of which player won and the number of round.
+*/
+
+// Pre-Processor directive:
+#include <iostream>
+#include <conio.h>
+#include <string>
+#include <time.h>
+#include <Windows.h>
+#include "colours.h"
+using namespace std;
+
+// Global/Static variable dictionary:
+const int CARD = 0, SUIT = 1;    // Number to access the card's number and suit
+
+// Function prototype:
+void seed_random(void);                                                                                   // Seed random generator for random number
+void ClearScreen(void);                                                                                   // Clear screen like system("cls")
+void Pause(void);                                                                                         // Print pause point like system("pause")
+void introduce(void);                                                                                     // Introduce the player to the game and how this game works
+void play_war(const char MODE);                                                                           // Play the war game
+void divide_card(int player1[26][2], int player2[26][2]);                                                 // Divide the card deck into 2 sets of 26 cards for two players
+void print_card(const int CARD_NUM, const int CARD_SUIT);                                                 // Print the card's out look
+void print_hiddenCard(void);                                                                              // Print the face down card out look during the "War" process
+void transfer_cards(int player_card[52][2], int &p_numcard, int round_card[52][2], const int r_numcard);  // Transfer cards from the round to the bottom of player's deck
+int check_numround(void);                                                                                 // The number of round player want to play
+int player_play(bool war, int player_card[52][2], int &p_numcard, int round_card[52][2], int &r_numcard); // Player play the round
+char check_mode(void);                                                                                    // Ensure player choose one of the two available mode
+
+int main(void)
+{
+	// Local variable dictionary:
+	char mode;                // The mode player want to play
+
+
+	 /* Program */
+	introduce();         // Introduce the player to the game
+
+	mode = check_mode(); // Get play mode
+
+	play_war(mode);      // Play the game
+
+	// Stop point
+	Pause();
+
+	// Return
+	text_colour(f_gray, b_black); // Return colour
+	return 0;
+} // Main
+
+
+ /* Function */
+/* seed_random(void) - This function will seed the random generator for random number.
+*/
+void seed_random(void)
+{
+	// Local variable dictionary:
+	int i;            // Loop counter
+
+	// Seed the random number generator use the timer
+	srand((unsigned)time(NULL));
+	for (i = 0; i<rand(); i++)
+		rand();
+} // seed_random(void)
+
+
+/* ClearScreen(void) - This function will create a three spaces seperation.
+*/
+void ClearScreen(void)
+{
+	cout << string(3, '\n'); // Print three new lines
+} // ClearScreen(void)
+
+
+/* Pause(void) - This function will print pause point like system("pause").
+*/
+void Pause(void)
+{
+	text_colour(f_gray, b_black); // Colour
+	cout << "Press any key to continue...";
+	_getch();
+	text_colour(f_white, b_black); // Reset colour
+	ClearScreen();
+} // Pause(void)
+
+
+/* introduce(void) - This function will introduce the player to this program/game/rules.
+*/
+void introduce(void)
+{
+	text_colour(f_yellow, b_black); // Colour
+	cout << "Two players divide the card randomly into two sets(26 cards)." << endl;
+	cout << "Then they will flip the top card together..." << endl;
+	cout << "Player who flip the higher card value will takes both cards and put them on the bottom of the deck." << endl;
+	cout << "NOTE: If the cards are of the same value, it is war." << endl;
+	cout << "Both player will put one card face down and another face up..." << endl;
+	cout << "Player with higher face up card take all the card of that round." << endl;
+	cout << "    NOTE: A round is only considered to be over when there is a winner." << endl;
+	cout << "If the two cards are continue to be the same, repeat this process." << endl;
+	text_colour(f_red, b_black); // Colour
+	cout << "Card rank : 2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A." << endl;
+	text_colour(f_green, b_black); // Colour
+	cout << "The game end when one player run out of card to play." << endl;
+	text_colour(f_white, b_black); // Colour
+	cout << "There will be two modes :" << endl;
+	cout << "    i. (I)nput mode - Update information after each round." << endl;
+	cout << "    ii. (N)o input mode - Run the game without interruption and gives result at the end." << endl;
+	Pause();
+	text_colour(f_white, b_black); // Reset colour
+} // introduce(void)
+
+
+/* play_war(const char) - This function will play the card game called war.
+Parameter:
++ MODE - The game mode player want to play.
+*/
+void play_war(const char MODE)
+{
+	// Local variable dictionary:
+	int player1_card[52][2], player2_card[52][2];    // Player 1 and 2 hand cards
+	int numcard1 = 26, numcard2 = 26;                // Number of cards player 1 and 2 have
+	int round_card[52][2];                           // Cards on the current round
+	int numcard_round;                               // Number of card in that round
+	int flipcard1, flipcard2;                        // The face up card that player 1 and 2 depend on to win the round
+	int max_round;                                   // The max number of round player want to play
+
+
+	 /* Game */
+	// Ask the player for the number of round they want to play
+	max_round = check_numround();
+
+	// Divide the deck into two sets randomly ( 26 cards )
+	divide_card(player1_card, player2_card);
+
+	// Start the war
+	int round = 0;
+	for (int counter = 1; counter <= max_round && numcard1 > 0 && numcard2 > 0; counter++)
+	{
+		// Reset variable
+		round = counter;
+		flipcard1 = 0;
+		flipcard2 = 0;
+		numcard_round = 0;
+
+		// Print round number
+		ClearScreen();
+		text_colour(f_white, b_black); // Colour
+		cout << "Round ";
+		text_colour(f_green, b_black); // Colour
+		cout << round;
+		text_colour(f_white, b_black); // Colour
+		cout << ":" << endl;
+
+		// Player 1 flip the top card
+		text_colour(f_white, b_black); // Colour
+		cout << "Player 1's top card is:" << endl;
+		flipcard1 = player_play(false, player1_card, numcard1, round_card, numcard_round);
+
+		// Player 2 flip the top card
+		text_colour(f_white, b_black); // Colour
+		cout << "Player 2's top card is:" << endl;
+		flipcard2 = player_play(false, player2_card, numcard2, round_card, numcard_round);
+
+		// "War time" if both of the cards player fliped are the same
+		while (flipcard1 == flipcard2 && player1_card > 0 && player2_card > 0)
+		{
+			ClearScreen();
+			text_colour(f_dred, b_black); // Colour
+			cout << "WAR TIME!!!" << endl;
+
+			/* Player 1 */
+			text_colour(f_red, b_black); // Colour
+			cout << "WAR! Player 1:" << endl;
+			flipcard1 = player_play(true, player1_card, numcard1, round_card, numcard_round);
+
+			/* Player 2 */
+			text_colour(f_red, b_black); // Colour
+			cout << "WAR! Player 2:" << endl;
+			flipcard2 = player_play(true, player2_card, numcard2, round_card, numcard_round);
+
+			// Print out tie message if the destiny cards are still same
+			if (flipcard1 == flipcard2)
+			{
+				cout << endl;
+				text_colour(f_dred, b_black); // Colour
+				cout << "The two face up cards are still the same!" << endl;
+				cout << "You know what that means... KILL 'EM!" << endl;
+				// Mode
+				if (MODE == 'I')
+					Pause();
+			} // If
+		} // While
+
+
+		// Move the cards from round to winner
+		if (flipcard1 > flipcard2 || player2_card == 0)
+		{
+			transfer_cards(player1_card, numcard1, round_card, numcard_round); // Transfer to player 1
+		} // If
+		else
+		{
+			transfer_cards(player2_card, numcard2, round_card, numcard_round); // Transfer to player 2
+		} // Else
+
+		// Print the number of cards each player have
+		text_colour(f_white, b_black); // Colour
+		cout << "Player 1 have ";
+		text_colour(f_green, b_black); // Colour
+		cout << numcard1;
+		text_colour(f_white, b_black); // Colour
+		cout << " card(s)..." << endl;
+		text_colour(f_white, b_black); // Colour
+		cout << "Player 2 have ";
+		text_colour(f_green, b_black); // Colour
+		cout << numcard2;
+		text_colour(f_white, b_black); // Colour
+		cout << " card(s)..." << endl;
+		// Mode
+		if (MODE == 'I')
+			Pause();
+	} // For
+
+	// Print final result
+	ClearScreen();
+	if (numcard1 > numcard2)
+	{
+		text_colour(f_white, b_black); // Colour
+		cout << "Player 1 won! In ";
+		text_colour(f_green, b_black); // Colour
+		cout << round;
+		text_colour(f_white, b_black); // Colour
+		cout << " round..." << endl;
+	} // If
+	else if (numcard1 < numcard2)
+	{
+		text_colour(f_white, b_black); // Colour
+		cout << "Player 2 won! In ";
+		text_colour(f_green, b_black); // Colour
+		cout << round;
+		text_colour(f_white, b_black); // Colour
+		cout << " round..." << endl;
+	} // Else
+	else
+	{
+		text_colour(f_white, b_black); // Colour
+		cout << "Both player tie! There is no winner in ";
+		text_colour(f_green, b_black); // Colour
+		cout << round;
+		text_colour(f_white, b_black); // Colour
+		cout << " round..." << endl;
+	} // Else
+
+	// Print the number of cards each player have
+	text_colour(f_white, b_black); // Colour
+	cout << "Player 1 have ";
+	text_colour(f_green, b_black); // Colour
+	cout << numcard1;
+	text_colour(f_white, b_black); // Colour
+	cout << " card(s)..." << endl;
+	text_colour(f_white, b_black); // Colour
+	cout << "Player 2 have ";
+	text_colour(f_green, b_black); // Colour
+	cout << numcard2;
+	text_colour(f_white, b_black); // Colour
+	cout << " card(s)..." << endl;
+
+	text_colour(f_white, b_black); // Reset colour
+} // play_war(const char)
+
+
+/* divide_card(int[][], int[][]) - THis function will divide the deck into half for both players to start.
+Parameter:
++ player1 - Player 1's cards.
++ player2 - PLayer 2's cards.
+*/
+void divide_card(int player1[26][2], int player2[26][2])
+{
+	// Local variable dictionary:
+	bool taken_cards[13][4] = { false };    // Keep track of cards that are still in the deck
+
+	// Seed random generator
+	seed_random();
+
+	// Assign cards to each player
+	for (int position = 0; position < 26; position++)
+	{
+		// Function variable dictionary:
+		// The card number assign
+		int assign_card = rand() % 13, assign_card2 = rand() % 13;    // Assign card's number to player
+		int assign_suit = rand() % 4, assign_suit2 = rand() % 4;      // Assign the card's suit to player
+
+		do
+		{
+			while (assign_card == assign_card2 && assign_suit == assign_suit2)
+			{
+				assign_card = rand() % 13;
+				assign_card2 = rand() % 13;    // Assign card's number to player
+				assign_suit = rand() % 4;
+				assign_suit2 = rand() % 4;      // Assign the card's suit to player
+			} // While
+
+			// Ensure the card given is legal
+			while (taken_cards[assign_card][assign_suit] || taken_cards[assign_card2][assign_suit2])
+			{
+				if (taken_cards[assign_card][assign_suit])
+				{
+					// Get another card for player 1
+					assign_card = rand() % 13;
+					assign_suit = rand() % 4;
+				} // If
+				else if (taken_cards[assign_card2][assign_suit2])
+				{
+					// Get another card for player 2
+					assign_card2 = rand() % 13;
+					assign_suit2 = rand() % 4;
+				} // Else if
+			} // While
+		} while ((assign_card == assign_card2) && (assign_suit == assign_suit2) || taken_cards[assign_card][assign_suit] || taken_cards[assign_card2][assign_suit2]);
+		
+		// Taking the cards off the deck
+		taken_cards[assign_card][assign_suit] = true;
+		taken_cards[assign_card2][assign_suit2] = true;
+
+		// Assign the cards to player
+		player1[position][CARD] = assign_card + 2;    // Assign card's number to player 1
+		player1[position][SUIT] = assign_suit + 3;    // Assign card's suit to player 1
+		player2[position][CARD] = assign_card2 + 2;    // Assign card's number to player 2
+		player2[position][SUIT] = assign_suit2 + 3;    // Assign card's suit to player 2
+	} // For
+} // divide_card(int[][], int[][])
+
+
+/* print_card(const int, const int) - THis function will print the card's outlook.
+Parameter:
++ CARD_NUM - The card's number need to print.
++ CARD_SUIT - The card's suit need to print.
+*/
+void print_card(const int CARD_NUM, const int CARD_SUIT)
+{
+	// Local variable dictionary
+	int suit;               // Number of the suit
+	string print_card;      // Card face look (Card that are above 10)
+
+	// Check right colour
+	if (CARD_SUIT <= 4)
+		text_colour(f_red, b_white);
+	else
+		text_colour(f_black, b_white);
+
+	// For number that >= 10
+	switch (CARD_NUM)
+	{
+	case 2: print_card = "2"; break;
+	case 3: print_card = "3"; break;
+	case 4: print_card = "4"; break;
+	case 5: print_card = "5"; break;
+	case 6: print_card = "6"; break;
+	case 7: print_card = "7"; break;
+	case 8: print_card = "8"; break;
+	case 9: print_card = "9"; break;
+	case 10: print_card = "T"; break;
+	case 11: print_card = "J"; break;
+	case 12: print_card = "Q"; break;
+	case 13: print_card = "K"; break;
+	case 14: print_card = "A"; break;
+	} // Switch
+
+	// Print card
+	cout << "=====" << endl;
+	cout << "|" << print_card << " " << (char)CARD_SUIT << "|" << endl;
+	cout << "|   |" << endl;
+	cout << "|" << (char)CARD_SUIT << " " << print_card << "|" << endl;
+	cout << "=====" << endl;
+
+	// Return colour
+	text_colour(f_white, b_black); // Reset colour
+} // print_card(const int, const int)
+
+
+/* print_hiddenCard(void) - This function will print the face down card out look.
+*/
+void print_hiddenCard(void)
+{
+	// Print card
+	text_colour(f_white, b_black); // Colour
+	cout << "=====" << endl;
+	cout << "|" << " - " << "|" << endl;
+	cout << "|   |" << endl;
+	cout << "|" << " - " << "|" << endl;
+	cout << "=====" << endl;
+
+	text_colour(f_white, b_black); // Reset colour
+} // print_hiddenCard(void)
+
+
+/* transfer_cards(int[][], int&, int[][], int&) - This function will transfer the cards from the rounf to the bottom of winner's deck.
+Parameter:
++ player_card - The cards player have in hand.
++ p_numcard - The number of cards player have.
++ round_card - The cards players are fighting for in that round.
++ r_numcard - The number of cards the player is battling in the round.
+*/
+void transfer_cards(int player_card[52][2], int &p_numcard, int round_card[52][2], const int r_numcard)
+{
+	for (int position = 0; position < r_numcard; position++)
+	{
+		// Assign the cards from the round to the bottom of the deck for win player
+		player_card[p_numcard][CARD] = round_card[position][CARD];
+		player_card[p_numcard][SUIT] = round_card[position][SUIT];
+		// Update the bottom position
+		p_numcard++;
+	} // For
+} // transfer_cards(int[][], int&, int[][], const int)
+
+
+/* check_numround(void) - This function will get the number of round player want to play.
+*/
+int check_numround(void)
+{
+	int num_round;    // Number of round
+
+	// Get number of round
+	text_colour(f_white, b_black); // Colour
+	cout << "The number of round you want to play to: ";
+	text_colour(f_green, b_black); // Colour
+	cin >> num_round;
+	// Validation
+	while (cin.fail() || num_round <= 0)
+	{
+		// Check if input is a illegal value
+		if (cin.fail())
+			cin.clear(); // Clear error
+		cin.ignore(255, '\n'); // Clean out remainder of input line
+
+		// Re-enter number of round
+		text_colour(f_red, b_black); // Colour
+		cout << "INVALID NUMBER OF ROUND! ";
+		text_colour(f_dred, b_black); // Colour
+		cout << "Please re-enter the number of round: ";
+		text_colour(f_green, b_black); // Colour
+		cin >> num_round;
+	} // While
+
+	// Return - Number of round
+	return num_round;
+} // check_numround(void)
+
+
+/* player_play(int[][], int&, int[][], int&, const int) - This function will be the process player play the round.
+Parameter:
++ war - Do the extral face down a card if it is war.
++ player_card - The cards player have in hand.
++ p_numcard - The number of cards player have.
++ round_card - The cards players are fighting for in that round.
++ r_numcard - The number of cards the player is battling in the round.
++ round - The round's number.
+*/
+int player_play(bool war, int player_card[52][2], int &p_numcard, int round_card[52][2], int &r_numcard)
+{
+	// Local variable ditionary:
+	int flipcard_value;          // The value of player's top card
+
+	// If it is war - Face down a card
+	if (war)
+	{
+		// Player 1 put a card face down
+		print_hiddenCard();
+		// Move the card to the round and push up the player deck
+		round_card[r_numcard][CARD] = player_card[0][CARD];
+		round_card[r_numcard][SUIT] = player_card[0][SUIT];
+		// Update value
+		r_numcard++;
+		p_numcard--;
+		for (int position = 1; position <= p_numcard; position++)
+		{
+			player_card[position - 1][CARD] = player_card[position][CARD];
+			player_card[position - 1][SUIT] = player_card[position][SUIT];
+		} // For
+	} // If
+
+	// Print the top card
+	print_card(player_card[0][CARD], player_card[0][SUIT]);
+	flipcard_value = player_card[0][CARD];
+	// Move the card to the round and push up the player deck
+	round_card[r_numcard][CARD] = player_card[0][CARD];
+	round_card[r_numcard][SUIT] = player_card[0][SUIT];
+	// Update value
+	r_numcard++;
+	p_numcard--;
+	for (int position = 1; position <= p_numcard; position++)
+	{
+		player_card[position - 1][CARD] = player_card[position][CARD];
+		player_card[position - 1][SUIT] = player_card[position][SUIT];
+	} // For
+
+	// Return - Value of player's top card
+	return flipcard_value;
+} // player_play(int[][], int&, int[][], int&, const int)
+
+
+/* check_mode(void) - This function will get the game mode player want to play.
+    i. (I)nput mode - Update information after each round.
+   ii. (N)o nput mode - Run the game without interruption and gives result at the end.
+*/
+char check_mode(void)
+{
+	// Local variable dictionary:
+	char mode;
+
+	// Get the mode
+	text_colour(f_white, b_black); // Colour
+	cout << "Which mode would you like to play:" << endl;
+	cout << "    i) (I)nput mode." << endl;
+	cout << "   ii) (N)o input mode." << endl;
+	text_colour(f_gray, b_black); // Colour
+	cout << "Choice: ";
+	text_colour(f_green, b_black); // Colour
+	mode = toupper(_getch());
+	cout << mode << endl;
+	// Validation
+	while (mode != 'I' && mode != 'N')
+	{
+		text_colour(f_red, b_black); // Colour
+		cout << "INVALID MODE! ";
+		text_colour(f_dred, b_black); // Colour
+		cout << "Please re-enter mode: ";
+		text_colour(f_green, b_black); // Colour
+		mode = toupper(_getch());
+		cout << mode << endl;
+	} // While
+
+	// Return - Mode
+	text_colour(f_white, b_black); // Reset colour
+	return mode;
+} // check_mode(void)
