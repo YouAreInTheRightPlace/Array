@@ -1,0 +1,348 @@
+/* TheFactorRace
+Duy Anh Nguyen
+November 6, 2017
+This program will simulate the all time famous factor game made by Mr. Scott ( I think he makes it ).
+There will be two team trying to compete for the highest score.
+The rules of this game will be explain inside game run something like this:
+There will be two teams, the decision of which team get to go first will be made by the player or randomize.
+Each team take turn alternatively one after another until all number been picked.
+Team pick a number on the board to score while any factors that go into that number will be score by the enemy.
+For example, if team 1 picked 4, team 2 will score 2 and 1 if the numbers 2 and 1 are available on the board since 2 and 1 are factors of 4.
+Process:
+ - Print menu.
+    + Choice 'R': Intruduce the rules.
+    + Choice 'P': Play the game.
+    + Get input: the number of number on the board ( from 0 to 100 ).
+    + Each team take turn to pick number.
+    + Ensure the number picked is legal and has not picked before.
+    + Check for factors that are available of that number to give point to the other team.
+    + Update score and number available.
+    + Print which team won and final score.
+    + Choice 'Q': Quit the game.
+*/
+
+// Pre-Processor directive:
+#include <iostream>
+#include <iomanip>
+#include <conio.h>
+#include <string>
+#include <vector>
+#include <Windows.h>
+#include "colours.h"
+using namespace std;
+
+// Function prototype:
+void Check_cinfail(void);                                                // Ensure user's input for bet and guess is not a garbage value
+void ClearScreen(void);                                                  // Clear screen like system("cls")
+void Pause(void);                                                        // Print pause point like system("pause")
+void rules(void);                                                        // Introduce the rules
+void play_game(void);                                                    // Play the factor game
+void num_board(const vector<bool> &NUMBER);                              // Print the number board that shows the available number
+void score_board(const int T1_SCORE, const int T2_SCORE);                // Print the score board
+void print_team_won(const int TEAM1, const int TEAM2);                   // Print the final result after the game - Which team won
+int Check_numInput(const vector<bool> &NUM_AVAILABLE);                   // Check user's input - Ensure it is legal
+char menu(void);                                                         // Print the menu and let user choose to see the (R)ules, (P)lay, or (Q)uit
+
+// Main program
+int main(void)
+{
+	// Local variable dictionary:
+	char choice;                 // User choice to read the rules, play, or quit
+
+	 /* Program */
+	// Run until user want to quit
+	do
+	{
+		choice = menu(); // Get user choice
+
+		// Execute choice
+		switch (choice)
+		{
+		case 'R': // Introduce player to the rules
+			rules();
+			// Go straight to playing the game after read the rules
+		case 'P': // Play the game
+			play_game();
+			// End case
+			break;
+
+		case 'Q': // Quit the game
+			// End case
+			break;
+		} // Switch
+	} while (choice != 'Q');
+
+	// Return
+	text_colour(f_gray, b_black); // Return colour
+	return 0;
+} // Main
+
+
+ /* Function */
+/* check_cinfail(void) - This funtion check to ensure the value user entered is not a garbage value.
+*/
+void Check_cinfail(void)
+{
+	if (cin.fail())
+		cin.clear(); // Clear error
+	cin.ignore(255, '\n'); // Clean out remainder of input line
+} // check_cinfail(void)
+
+
+/* ClearScreen(void) - This function will clear the screen like system("cls").
+*/
+void ClearScreen(void)
+{
+	cout << string(3, '\n');
+} // ClearScreen(void)
+
+
+/* Pause(void) - This function will print pause point like system("pause").
+*/
+void Pause(void)
+{
+	text_colour(f_gray, b_black); // Colour
+	cout << "Press any key to continue...";
+	_getch();
+	text_colour(f_white, b_black); // Reset colour
+	ClearScreen();
+} // Pause(void)
+
+
+/* rules(void) - This function will print out the rules of the game.
+*/
+void rules(void)
+{
+	// Intruduce the player to the game
+	text_colour(f_white, b_black); // Colour
+	cout << "There will be 2 teams compete for score." << endl;
+	cout << "Both team will only have one goal, get higher score that the other team." << endl;
+	cout << "The decision of which team get to go first could be decided by the players or randomize." << endl;
+	cout << "Each team take turn alternatively one after another until all number been picked..." << endl;
+	cout << endl; // Space
+	cout << "To score point, each team will pick any avaiable number on the screen." << endl;
+	cout << "The number they picked will be their score for that turn." << endl;
+	cout << "On the other hand, any numbers that are factor/go into that number will be the other team score for that turn." << endl;
+	cout << endl; // Space
+	text_colour(f_green, b_black); // Colour
+	cout << "Rules of the game:" << endl;
+	cout << "    " << "1) Each team have to take turn alternatively." << endl;
+	cout << "    " << "2) A used number cannot be pick again." << endl;
+	cout << "    " << "3) Team cannot skip any turn." << endl;
+	Pause();
+	text_colour(f_white, b_black); // Return colour
+} // rules(void)
+
+
+/* play_game(void) - This function will let 2 team play this factor game.
+*/
+void play_game(void)
+{
+	// Local variable dictionary:
+	unsigned int t1_score = 0, t2_score = 0;          // Team 1 and 2 score
+	int max_num;                                      // Amount of number player want to play with
+	vector<bool> num_available;                       // Keep track of available number that both team could pick
+
+	// Get input - Amount of number player want to play
+	cout << "Amount of number you want to play with ( CANNOT BE LESS THAN ONE AND NO MORE THAN 100 ): ";
+	cin >> max_num;
+	// Validation
+	while (cin.fail() || max_num <= 0 || max_num > 100)
+	{
+		Check_cinfail();
+
+		// Print error
+		cout << "INVALID INPUT!";
+		// Re-enter input - Amount of number player want to play with
+		cout << "Please re-enter the amount of number you want to play with ( 0 < amount of number < 101 ): ";
+		cin >> max_num;
+	} // While
+	  // Set the number player want to play with
+	num_available.resize(max_num);
+	// Make all the number available
+	for (size_t counter = 0; counter < num_available.size(); counter++)
+	{
+		num_available[counter] = true;
+	} // For
+	ClearScreen();
+
+
+	 /* Play the game */
+	int num_aval = num_available.size();    // Number of available number
+	while (true)
+	{
+		int choose_num;    // The number choose by each team
+
+		// Print the number available board
+		num_board(num_available);
+		// Print the score board
+		score_board(t1_score, t2_score);
+
+		// Team 1 choose the number
+		num_aval--; // Have to pick one number
+		cout << "Team 1 choose: ";
+		choose_num = Check_numInput(num_available);;
+		// Update score
+		t1_score += choose_num;
+		num_available[choose_num - 1] = false;
+		// Any factor of the number team 1 picked that are still available will become team 2 score
+		for (size_t count = 0; count < num_available.size(); count++)
+			if (choose_num % (count + 1) == 0)
+				if (num_available[count] == true)
+				{
+					t2_score += (count + 1);
+					num_available[count] = false;
+					num_aval--;
+				} // If
+		ClearScreen();
+		// End the loop when there are zero available number
+		if (num_aval == 0)
+			break;
+
+		// Print the number available board
+		num_board(num_available);
+		// Print the score board
+		score_board(t1_score, t2_score);
+
+		// Team 2 choose the number
+		num_aval--; // Have to pick one number
+		cout << "Team 2 choose: ";
+		choose_num = Check_numInput(num_available);
+		// Update score
+		t2_score += choose_num;
+		num_available[choose_num - 1] = false;
+
+		// Any factor of the number team 2 picked that are still available will become team 1 score
+		for (size_t count = 0; count < num_available.size(); count++)
+			if (choose_num % (count + 1) == 0)
+				if (num_available[count] == true)
+				{
+					t1_score += (count + 1);
+					num_available[count] = false;
+					num_aval--;
+				} // If
+		ClearScreen();
+		// End the loop when there are zero available number
+		if (num_aval == 0)
+			break;
+	} // While
+
+	// Print team won and final score
+	num_board(num_available);
+	print_team_won(t1_score, t2_score);
+	Pause();
+	text_colour(f_white, b_black); // Reset colour
+} // play_game(void)
+
+
+/* num_board(const vector<bool>&) - This function will print the number board to let player pick.
+Parameter:
++ NUMBER - The amount of number user want to play and the available number
+*/
+void num_board(const vector<bool> &NUMBER)
+{
+	// How to identify number that are available and not available
+	text_colour(f_green, b_black); // Colour
+	cout << "The numbers that are available will be in..." << endl;
+	text_colour(f_red, b_black); // Colour
+	cout << "The numbers that are not available will be in..." << endl;
+	// Print the number board
+	for (size_t counter = 0; counter < NUMBER.size(); counter++)
+	{
+		// Print the number an sort it in the right colour
+		if (NUMBER[counter] == true)
+			text_colour(f_green, b_black);
+		else
+			text_colour(f_red, b_black);
+
+		cout << setw(5) << (counter + 1);
+
+		// Space down every 10 numbers
+		if ((counter + 1) % 10 == 0)
+			cout << endl;
+	} // For
+	cout << endl;
+	// Return colour
+	text_colour(f_white, b_black);
+} // num_board(const vector<bool>&)
+
+
+/* score_board(const int, const int) - This function will print the score board of both team.
+Parameter:
++ T1_SCORE - The score of team 1.
++ T2_SCORE - The score of team 2.
+*/
+void score_board(const int T1_SCORE, const int T2_SCORE)
+{
+	cout << "Team 1's score: " << T1_SCORE << endl;
+	cout << "Team 2's score: " << T2_SCORE << endl;
+} // score_board(const int, const int)
+
+
+/* print_team_won(const int, const int) - This function will print which team won.
+Parameter:
++ TEAM1 - Team 1.
++ TEAM2 - Team 2.
+*/
+void print_team_won(const int TEAM1, const int TEAM2)
+{
+	if (TEAM1 > TEAM2)
+		cout << "Team 1 won! The score is " << TEAM1 << "-" << TEAM2 << endl;
+	else if (TEAM2 > TEAM1)
+		cout << "Team 2 won! The score is " << TEAM2 << "-" << TEAM1 << endl;
+	else
+		cout << "Both team have the same score! Tie " << TEAM1 << "-" << TEAM2 << endl;
+} // print_team_won(const int, const int)
+
+
+/* Check_numInput(const vector<bool>&) - This function will check and ensure player's input for number is legal.
+Parameter:
++ NUM_AVAILABLE - Keep track of available number that both team could pick.
+*/
+int Check_numInput(const vector<bool> &NUM_AVAILABLE)
+{
+	// Local variable dictionary:
+	int verify_num;                // Ensure the number is legal
+
+	// Get input - Verify number
+	text_colour(f_green, b_black); // Colour
+	cin >> verify_num;
+
+	// Validation
+	while (cin.fail() || verify_num <= 0 || verify_num > 100 || NUM_AVAILABLE[verify_num - 1] == false)
+	{
+		Check_cinfail();
+
+		// Re-enter input - Amount of number player want to play with
+		text_colour(f_red, b_black); // Colour
+		cout << "INVALID INPUT!";
+		text_colour(f_dred, b_black); // Colour
+		cout << "Please choose a valid input: ";
+		text_colour(f_white, b_black); // Colour
+		cin >> verify_num;
+	} // While
+
+	  // Return - Verified number
+	return verify_num;
+} // Check_numInput(const vector<bool>&)
+
+
+/* menu(void) - This function will print the menu and get user's choice of (R)ule, (P)lay, or (Q)uit.
+*/
+char menu(void)
+{
+	// Print menu
+	text_colour(f_white, b_black); // Colour
+	cout << "Menu:" << endl;
+	cout << "(R)ules" << endl;
+	cout << "(P)lay" << endl;
+	cout << "(Q)uit" << endl;
+	text_colour(f_gray, b_black); // Colour
+	cout << "Choice: ";
+	char choice = toupper(_getch());    // User's choice
+	cout << choice << endl;
+	ClearScreen();
+
+	// Return - User's choice
+	return choice;
+} // memu(void)
