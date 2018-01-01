@@ -1,0 +1,472 @@
+/* MillionDream
+Duy Anh Nguyen
+November 9, 2017
+This program will replace the lotto 6-49 because it is harder to become millionaire that way. Therefore, lotto 49 comes in.
+If you have enough money to bet. You'll be more likely to become millionaire.
+You will get nothing if you only got one or two number the same.
+You will get back your bet if you got three number the same and win ratio of 1-100 if got all four number right.
+Ratio 1:100 means if you put $1 and got 4 number right, you'll get $100 because 1 x 100 = $100 and add back to the $1
+Process:
+ - Generate random money for the future millionaire to play with.
+ - Get input: The amount of money the player want to bet.
+    + Validation.
+ - Generate four random number the user have to guess.
+ - Get input: The four numbers player guess.
+    + Validation.
+    + Player cannot guess the same number.
+ - Print the four numbers player have to guess.
+ - Print the four numbers player guessed.
+ - Compare and print if the player got any number right and did they win any money.
+    + Player got zero, one, or two number right - No money win.
+    + Player got three number right - Win back the bet.
+    + Player got four number right - Win ratio of 1:100. ( If bet $1, win $100 - You get $101 in the end )
+ - Check if player still have money to play.
+    - Ask if player want to play again.
+*/
+
+// Pre-Processor directive:
+#include <iostream>
+#include <conio.h>
+#include <string>
+#include <Windows.h>
+#include <time.h>
+#include "colours.h"
+using namespace std;
+
+// Function prototype:
+void seed_random(void);                                                     // Seed the random generator for random number
+void check_cinfail(void);                                                   // Ensure user's input for bet and guess is not a garbage value
+void ClearScreen(void);                                                     // Clear screen like system("cls")
+void Pause(void);                                                           // Print pause point like system("pause")
+void introduce(void);                                                       // Introduce the player to how the game works
+void guess_num(int guess_num[4]);                                           // The four numbers player have to guess
+void player_guess(int guess[4]);                                            // Player guess the four numbers
+void final_guess_board(const int GUESS[4], const int GUESS_NUM[4]);         // Print the final number player have to guess and player's guess board
+void Goodbye(const int MONEY);                                              // Print goodbye message
+int money_bet(const int MONEY);                                             // The amount of money player want to bet
+int win_lose(const int GUESS[4], const int GUESS_NUM[4], const int BET);    // Check and print if user win or lose and return the outcome
+char play_again(const int MONEY);                                           // Ask if the player want to play again if have money
+
+// Main program
+int main(void)
+{
+	// Local variable dictionary:
+	int money;                   // Player's money
+	int bet;                     // Player's bet money
+	int guess_num[4];            // The four numbers player have to guesses
+	int guess[4];                // Player's four guesses
+	char choice;                 // Player's choice
+
+
+	 /* Program */
+	seed_random();             // Seed random generator with time
+
+	money = rand() % 1000 + 1; // Generate random beginning money for the player to play
+
+	introduce();               // Introduce the user to this program
+
+	// Play the lotto game until user choose to quit or run out of money
+	do
+	{
+		bet = money_bet(money); // Get input - Bet
+
+		::guess_num(guess_num); // Generate four random numbers the player try to guess
+
+		player_guess(guess);    // Player guess the four numbers
+
+		// Print the numbers player have to guess, player's guess, compare the guesses and return the amount of money player win/lose - Outcome
+		money += win_lose(guess, guess_num, bet);
+
+		// Check if player still have money to play
+		choice = play_again(money);
+	} while (choice != 'N' && money > 0);
+
+	// Print goodbye message
+	Goodbye(money);
+
+	// Return
+	text_colour(f_gray, b_black); // Return colour
+	return 0;
+} // Main
+
+
+ /* Function */
+/* seed_random(void) - This function will seed the random generator for random number.
+*/
+void seed_random(void)
+{
+	// Local variable dictionary:
+	int i;            // Loop counter
+
+	// Seed the random number generator use the timer
+	srand((unsigned)time(NULL));
+	for (i = 0; i < rand(); i++)
+		rand();
+} // seed_random(void)
+
+
+/* check_cinfail(void) - This funtion check to ensure the value user entered is not a garbage value.
+*/
+void check_cinfail(void)
+{
+	if (cin.fail())
+		cin.clear(); // Clear error
+	cin.ignore(255, '\n'); // Clean out remainder of input line
+} // check_cinfail(void)
+
+
+/* ClearScreen(void) - This function will create a three spaces seperation.
+*/
+void ClearScreen(void)
+{
+	cout << string(3, '\n'); // Print three new lines
+} // ClearScreen(void)
+
+
+/* Pause(void) - This function will print pause point like system("pause").
+*/
+void Pause(void)
+{
+	text_colour(f_gray, b_black); // Colour
+	cout << "Press any key to continue...";
+	_getch();
+	ClearScreen();
+} // Pause(void)
+
+
+/* introduce(void) - This function will introduce the player to this program/game/rules.
+*/
+void introduce(void)
+{
+	text_colour(f_white, b_black); // Colour
+	cout << "ARE YOU READY TO BECOME A MILLIONAIRE!" << endl;
+	cout << "I hope so because you are in my way..." << endl;
+	cout << "Do you know about that game called LOTTO 6-49? It is hard to be able to get all the number isn't it!?" << endl;
+	cout << "CONGRATULATION because now there is a game called LOTTO 49 which is much more easy to get all the number!" << endl;
+	cout << "You know what that means! It means it is your time to become a millionaire-ish..." << endl;
+	cout << "Player ( YES YOU ) will require to pick four numbers from 1 to 9 as their guesses." << endl;
+	text_colour(f_red, b_black); // Colour
+	cout << "OH PLEASE, PLEASE! DO NOT! PICK YOUR NOSE... Pick the number!" << endl;
+	text_colour(f_green, b_black); // Colour
+	cout << "If player got zero, one, or two number right - No money win." << endl;
+	cout << "If player got three number right - Win back the bet." << endl;
+	cout << "If player got four number right - Win ratio of 1:100." << endl;
+	cout << "(If bet $1, win $100 - Get addition of $100 means you still keep the $1 so now you have $101)" << endl;
+	text_colour(f_white, b_black); // Colour
+	cout << "Do the math and show your nerdiness! ";
+	cout << "You will only need to bet $10,000 and hit to become a millionaire-ish!" << endl;
+	cout << "GOODLUCK PLAYER!" << endl;
+	Pause();
+	text_colour(f_white, b_black); // Reset colour
+} // introduce(void)
+
+
+/* guess_num(int[]) - This function will generate the four random numbers that user have to guess.
+Parameter:
++ guess_num - The four numbers user have to guess.
+*/
+void guess_num(int guess_num[4])
+{
+	// Generate the four random number for the player to guess
+	for (int counter = 0; counter < 4; counter++)
+	{
+		// Initialize the random number
+		guess_num[counter] = rand() % 9 + 1;
+
+		// Ensure all the number player have to guesses are not the same
+		for (int count = 0; count < counter; count++)
+		{
+			if (guess_num[counter] == guess_num[count])
+			{
+				guess_num[counter] = rand() % 9 + 1;
+				count = -1; // Force to restart the loop check
+			} // If
+		} // For
+	} // For
+} // guess_num(int[])
+
+
+/* player_guess(int[]) - This function will get the four numbers the player guess.
+Parameter:
++ guess - Player's guesses.
+*/
+void player_guess(int guess[4])
+{
+	// Get input - Player's guesses
+	for (int counter = 0; counter < 4; counter++)
+	{
+		text_colour(f_white, b_black); // Colour
+		cout << "Guess #" << (counter + 1) << ": ";
+		text_colour(f_green, b_black); // Colour
+		cin >> guess[counter];
+		// Validation
+		bool changing;
+		do
+		{
+			changing = false;
+
+			// Validate
+			while (cin.fail() || guess[counter] <= 0 || guess[counter] > 9)
+			{
+				//  Check if input fail
+				check_cinfail();
+
+				// Re-enter - Guess
+				text_colour(f_red, b_black); // Colour
+				cout << "INVALID INPUT! ";
+				text_colour(f_dred, b_black); // Colour
+				cout << "Please re-enter your guess #" << (counter + 1) << ": ";
+				cin >> guess[counter];
+				changing = true;
+			} // While
+
+			// Ensure the number player entered is legal
+			for (int count = 0; count < counter; count++)
+			{
+				// Ensure play do not guesses the same number twice
+				if (guess[counter] == guess[count])
+				{
+					text_colour(f_red, b_black); // Colour
+					cout << "YOU CANNOT GUESS THE SAME GUESS! ";
+					text_colour(f_dred, b_black); // Colour
+					cout << "Please re-enter your guess #" << (counter + 1) << ": ";
+					cin >> guess[counter];
+					changing = true;
+					count = -1; // Force the loop check to restart
+				} // If
+			} // For
+		} while (changing);
+	} // For
+
+	// ClearScreen
+	text_colour(f_white, b_black); // Reset colour
+	ClearScreen();
+} // player_guess(int[])
+
+
+/* final_board(const int[], const int[]) - This function will print out the number player have to guess and player's guesses in the end.
+Parameter:
++ GUESS - Player's guess.
++ GUESS_NUM - The four numbers player have to guess.
+*/
+void final_guess_board(const int GUESS[4], const int GUESS_NUM[4])
+{
+	// Print the number player have to guess
+	text_colour(f_white, b_black); // Colour
+	cout << "The number you were trying to guess were:";
+	for (int counter = 0; counter < 4; counter++)
+	{
+		text_colour(f_red, b_black); // Colour
+		// Check if the number is match with guess and print the right colour
+		for (int count = 0; count < 4; count++)
+		{
+			if (GUESS_NUM[counter] == GUESS[count])
+			{
+				// Print green if the same
+				text_colour(f_green, b_black); // Colour
+				break;
+			} // If
+		} // For
+		cout << " ";
+		cout << GUESS_NUM[counter];
+	} // For
+	cout << endl; // Space
+
+	// Print the number play guess
+	text_colour(f_white, b_black); // Colour
+	cout << "Your four guesses were:";
+	for (int counter = 0; counter < 4; counter++)
+	{
+		text_colour(f_red, b_black); // Colour
+		// Check if the number is match with guess and print the right colour
+		for (int count = 0; count < 4; count++)
+		{
+			// Print green if the same
+			if (GUESS[counter] == GUESS_NUM[count])
+			{
+				text_colour(f_green, b_black); // Colour
+				break;
+			} // If
+		} // For
+		cout << " ";
+		cout << GUESS[counter];
+	} // For
+	cout << endl; // Space
+	text_colour(f_white, b_black); // Reset colour
+} // final_board(const int[], const int[])
+
+
+/* Goodbye(const int) - This function will print goodbye message.
+Parameter:
++ MONEY - Player's money.
+*/
+void Goodbye(const int MONEY)
+{
+	if (MONEY == 0)
+	{
+		text_colour(f_red, b_black); // Colour
+		cout << "YOU LOSE ALL YOUR MONEY!?" << endl;
+		cout << "HOW DID THAT HAPPEN I WONDER..." << endl;
+		cout << "REMEMBER to stay in school... HINT, HINT, HINT..." << endl;
+	} // If
+	else if (MONEY >= 1000000) // Probably the only way you can see this message pop up is by cheating. (YOU CANNOT CHEAT IN LIFE SO GOODLUCK )
+	{
+		text_colour(f_green, b_black); // Colour
+		cout << "CONGRATULATION YOU HAVE BECOME A MILLIONAIRE-ish..." << endl;
+		cout << "Try not the get rob! HINT, HINT, HINT..." << endl;
+		cout << "And remember to give Mr. Scott the $5 for his retirement plan!" << endl;
+	} // Else if
+	else
+	{
+		text_colour(f_white, b_black); // Colour
+		cout << "YOU HAVE NOT REACH YOU PURPOSE... YET!" << endl;
+	} // Else
+
+	// Print player final money
+	text_colour(f_white, b_black); // Colour
+	cout << "You now have ";
+	text_colour(f_green, b_black); // Colour
+	cout << "$" << MONEY << endl;
+	Pause();
+	text_colour(f_white, b_black); // Reset colour
+} // Goodbye(const int)
+
+
+/* money_bet(const int) - This function will get the amount of money player want to bet.
++ MONEY - Player's current amount of money.
+*/
+int money_bet(const int MONEY)
+{
+	// Local variable dictionary:
+	int bet;              // The amount of money player want to bet
+
+	// Print current money
+	text_colour(f_white, b_black); // Colour
+	cout << "You currently have ";
+	text_colour(f_green, b_black); // Colour
+	cout << "$" << MONEY << endl;
+
+	// Get input - Bet
+	text_colour(f_white, b_black); // Colour
+	cout << "The amount of money you want to bet:";
+	text_colour(f_green, b_black); // Colour
+	cout << "$";
+	cin >> bet;
+	// Validation
+	while (cin.fail() || bet <= 0 || bet > MONEY)
+	{
+		check_cinfail();
+
+		// Re-enter bet
+		text_colour(f_red, b_black); // Colour
+		cout << "INVALID INPUT! ";
+		text_colour(f_dred, b_black); // Colour
+		cout << "Please re-enter you bet: $";
+		cin >> bet;
+	} // While
+
+	// Return - Bet
+	text_colour(f_white, b_black); // Reset colour
+	return bet;
+} // random_money(const int)
+
+
+/* win_lose(const int[], const int[], const int) - This function will check to see if player win or lose and return the outcome.
+Parameter:
++ GUESS - Player's guess.
++ GUESS_NUM - The four numbers player have to guess.
++ BET - Player's bet.
+*/
+int win_lose(const int GUESS[4], const int GUESS_NUM[4], const int BET)
+{
+	// Local variable dictionary:
+	int same = 0;    // The number of guess player got right
+
+	// Reveal the guesses
+	final_guess_board(GUESS, GUESS_NUM);
+
+	// Get the number of guess player got right
+	for (int counter = 0; counter < 4; counter++)
+	{
+		for (int count = 0; count < 4; count++)
+		{
+			if (GUESS[counter] == GUESS_NUM[count])
+				same++;
+		} // For
+	} // For
+
+	// Return outcome
+	int outcome;
+	switch (same)
+	{
+	case 3: // Player got 3 guesses right
+		text_colour(f_yellow, b_black); // Colour
+		cout << "You got 3 guesses right!" << endl;
+		cout << "You coule keep your bet: $" << BET << endl;
+		outcome = 0;
+		// End case
+		break;
+
+	case 4: // Player got 4 guesses right
+		text_colour(f_green, b_black); // Colour
+		cout << "You got all 4 guesses right!" << endl;
+		cout << "You just make: $" << BET * 100 << endl;
+		outcome = BET * 100;
+		// End case
+		break;
+
+	default: // Player got less than 3 guesses right
+		text_colour(f_red, b_black); // Colour
+		cout << "You got " << same << " guesses right!";
+		cout << "You lose your bet: $" << BET << endl;
+		outcome = -BET;
+	} // Switch
+
+	// Return - Outcome
+	text_colour(f_white, b_black); // Reset colour
+	return outcome;
+} // win_lose(const int[], const int[], const int)
+
+
+/* play_again(const int) - This function will get the option of player play again if still have money.
+Parameter:
++ MONEY - Player's money.
+*/
+char play_again(const int MONEY)
+{
+	// Local variable dictionary:
+	char choice;                // Player's choice to play again
+
+	// Check if player still have money to play
+	if (MONEY == 0)
+	{
+		text_colour(f_red, b_black); // Colour
+		cout << "YOU DON'T HAVE ANYMORE MONEY!" << endl;
+		choice = 'N';
+		Pause();
+	} // If
+	else
+	{
+		// Ask if player still want to play
+		text_colour(f_white, b_black); // Colour
+		cout << "Do you want to play again? (Y/N) ";
+		text_colour(f_green, b_black); // Colour
+		choice = toupper(_getch());
+		cout << choice << endl;
+		// Validation
+		while (choice != 'Y' && choice != 'N')
+		{
+			text_colour(f_red, b_black); // Colour
+			cout << "INVALID CHOICE! ";
+			text_colour(f_dred, b_black); // Colour
+			cout << "Please re-enter choice (Y/N): ";
+			choice = toupper(_getch());
+			cout << choice << endl;
+		} // While
+	} // Else
+	ClearScreen();
+
+	// Return - Choice
+	text_colour(f_white, b_black); // Colour
+	return choice;
+} // play_again(const int)
