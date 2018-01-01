@@ -1,0 +1,568 @@
+/* MyData-MyCookies
+Duy Anh Nguyen
+November 1, 2017
+This program will ensure user input data and depened on user to do the following options:
+Print highest, lowest, ranger, positive, negative, average, and variance or quit.
+Process:
+ - Print menu.
+ - Ensure user entered data.
+ - Do the eight options user choose or quit.
+    + Get data: Get data from user
+    + Print highest: Print the highest data.
+    + Print lowest: Print the lowest data.
+    + Print the range: Print the difference between the highest data and lowest data.
+    + Print positive data: Print every positive data.
+    + Print negative data: Print every negative data.
+    + Print the average: Print the average of all data.
+    + Print the variance: Print the variance. ( Data[run through each] - Average ) multiply itself and divide by the number of data.
+ - Quit: Ends the program.
+*/
+
+// Pre-Processor directive:
+#include <iostream>
+#include <conio.h>
+#include <string>
+#include <Windows.h>
+#include <vector>
+#include "colours.h"
+using namespace std;
+
+// Function prototype:
+void ClearScreen(void);                                                           // Clear screen like system("cls")
+void Pause(void);                                                                 // Print pause point like system("pause")
+void No_Data(void);                                                               // Let the user know they have not entered any data
+void anticipation(const double PRINT);                                            // Delay the print to provide user anticipation experience
+void execute_choice(const char choice, vector<int> &data, bool &data_entered);    // Run the choice of option user want
+void enter_data(vector<int> &data);                                               // Get input - data from user
+void range(const vector<int> &DATA);                                              // Print the range of data
+void positive_data(const vector<int> &DATA);                                       // Print all the positive data
+void negative_data(const vector<int> &DATA);                                       // Print all the negative data
+void variance(const vector<int> &DATA);                                            // Calculate and print the variance
+int Check_NumData(void);                                                          // Check user's input - Ensure number of data is a natural number
+int Check_NumInput(void);                                                         // Check user's input - Ensure data is a integer
+int highest_data(const vector<int> &DATA);                                         // Print the highest data
+int lowest_data(const vector<int> &DATA);                                          // Print the lowest data
+double average(const vector<int> &DATA);                                           // Calculate and print the overall average of data
+char menu(const bool DATA_ENTERED);                                               // Print the menu and get input, user option
+
+// Main program
+int main(void)
+{
+	// Local variable dictionary:
+	vector<int> data;            // Input data from user
+	bool data_entered = false;   // Check if data entered or not
+	char choice;                 // User choose option
+
+	 /* Program */
+	// Run until user's choice is (Q)uit
+	do
+	{
+		choice = menu(data_entered);                // Get number of data
+
+		execute_choice(choice, data, data_entered); // Run option
+	} while (choice != 'Q');
+
+	// Return
+	text_colour(f_gray, b_black); // Return colour
+	return 0;
+} // Main
+
+
+ /* Function */
+/* ClearScreen(void) - This function will clear the screen like system("cls").
+*/
+void ClearScreen(void)
+{
+	cout << string(3, '\n'); // Print three new lines
+} // ClearScreen(void)
+
+
+/* Pause(void) - This function will print pause point like system("pause").
+*/
+void Pause(void)
+{
+	text_colour(f_gray, b_black); // Colour
+	cout << "Press any key to continue...";
+	_getch();
+	text_colour(f_white, b_black); // Reset colour
+	ClearScreen();
+} // Pause(void)
+
+
+/* No_Data(void) - This function will print a message let the user know they have not entered any data.
+*/
+void No_Data(void)
+{
+	text_colour(f_red, b_black); // Colour
+	cout << "No Data had been entered! Please Enter Data..." << endl;
+	Pause();
+	text_colour(f_white, b_black); // Reset colour
+} // No_Data(void)
+
+
+/* anticipation(const double) - This function will delay to bring "anticipation experience" for user.
+Parameter:
++ PRINT - The number to print.
+*/
+void anticipation(const double PRINT)
+{
+	// Print dots to give user anticipation experience
+	text_colour(f_white, b_black); // Colour
+	for (int counter = 1; counter <= 3; counter++)
+	{
+		Sleep(1000);
+		cout << ".";
+	} // For
+	// Erase dots
+	cout << "\b\b\b";
+	// Print the random number
+	text_colour(f_green, b_black); // Colour
+	cout << PRINT << "   " << endl;
+
+	// Stop point
+	Pause();
+	text_colour(f_white, b_black); // Reset colour
+} // anticipation(const double)
+
+
+/* execute_choice(const char, vector<int>&, bool&) - This function will execure user's choice for option.
++ CHOICE - User's choice to run the option.
++ data - Input data from user.
++ data_entered - Check if there are any data entered or not.
+*/
+void execute_choice(const char CHOICE, vector<int> &data, bool &data_entered)
+{
+	switch (CHOICE)
+	{
+	case 'E': // Get input - Data
+		// Let user enter data
+		enter_data(data);
+		// Update the data had been entered
+		data_entered = true;
+		// End case
+		break;
+
+	case 'H': // Print highest value in the data
+		// Check if data entered
+		if (data_entered == false)
+			No_Data();
+		else
+		{
+			text_colour(f_white, b_black); // Colour
+			cout << "The highest value in the data is ";
+			anticipation(highest_data(data));
+			text_colour(f_white, b_black); // Reset colour
+		} // Else
+		// End case
+		break;
+
+	case 'L': // Print lowest value in the data
+		// Check if data entered
+		if (data_entered == false)
+			No_Data();
+		else
+		{
+			// Print lowest data
+			text_colour(f_white, b_black); // Colour
+			cout << "The lowest value in the data is ";
+			anticipation(lowest_data(data));
+			text_colour(f_white, b_black); // Reset colour
+		} // Else
+		// End case
+		break;
+
+	case 'R': // Print the difference between the highest data and lowest data
+		// Check if data entered
+		if (data_entered == false)
+			No_Data();
+		else
+			range(data);
+		// End case
+		break;
+
+	case 'P': // Print all the positive data
+		// Check if data entered
+		if (data_entered == false)
+			No_Data();
+		else
+			positive_data(data);
+		// End case
+		break;
+
+	case 'N': // Print all the positive data
+		// Check if data entered
+		if (data_entered == false)
+			No_Data();
+		else
+			negative_data(data);
+		// End case
+		break;
+
+	case 'A': // Calculate and print the average of all data
+		// Check if data entered
+		if (data_entered == false)
+			No_Data();
+		else
+		{
+			text_colour(f_white, b_black); // Colour
+			cout << "The average of all data is ";
+			anticipation(average(data));
+			text_colour(f_white, b_black); // Reset colour
+		} // Else
+		// End case
+		break;
+
+	case 'V': // Calculate and print variance
+		// Check if data entered
+		if (data_entered == false)
+			No_Data();
+		else
+			variance(data);
+		// End case
+		break;
+
+	case 'Q': // Quit
+		// End case
+		break;
+	} // Switch
+} // execute_choice(const char, vector<int>&, bool&)
+
+
+/* enter_data(vector<int>&) - This function will get input data from user.
+Parameter:
++ data - Input data from user.
+*/
+void enter_data(vector<int> &data)
+{
+	// Get input - Data size ( Number of data )
+	unsigned int num_data;   // Number of data
+	text_colour(f_white, b_black); // Colour
+	cout << "Number of data: ";
+	num_data = Check_NumData();
+	// Update data size
+	data.resize(num_data);
+
+	// Get input - Data
+	for (size_t counter = 0; counter < data.size(); counter++)
+	{
+		// Get data
+		text_colour(f_white, b_black); // Colour
+		cout << "Enter data #" << counter + 1 << ": ";
+		text_colour(f_gray, b_black); // Colour
+		data[counter] = Check_NumInput();
+	} // For
+
+	// Black to the main menu
+	text_colour(f_white, b_black); // Reset colour
+	ClearScreen();
+} // enter_data(vector<int>&)
+
+
+/* range(const vector<int>&) - This function will find and print the range.
+Parameter:
++ DATA - Input data from user.
+*/
+void range(const vector<int> &DATA)
+{
+	// Local variable dictionary:
+	int highest_data = ::highest_data(DATA);    // The highest data
+	int lowest_data = ::lowest_data(DATA);      // The lowest data
+
+	// Print the range
+	text_colour(f_white, b_black); // Colour
+	cout << "The range of this data is ";
+	anticipation(highest_data - lowest_data);
+	text_colour(f_white, b_black); // Reset colour
+} // range(const vector<int>&)
+
+
+/* positive_data(const vector<int>&) - This function will print all the positive data.
+Parameter:
++ DATA - Input data from user.
+*/
+void positive_data(const vector<int> &DATA)
+{
+	// Local variable dictionary:
+	unsigned int num_positive = 0;    // Number of positive data
+
+	// Print positive data
+	text_colour(f_white, b_black); // Colour
+	cout << "There are ";
+	for (size_t counter = 0; counter < DATA.size(); counter++)
+	{
+		if (DATA[counter] > 0)
+			num_positive++;
+	} // For
+	text_colour(f_green, b_black); // Colour
+	cout << num_positive; // Number of positive data
+
+	text_colour(f_white, b_black); // Colour
+	cout << " number of positive data:";
+	for (size_t counter = 0; counter < DATA.size(); counter++)
+	{
+		text_colour(f_green, b_black); // Colour
+		if (DATA[counter] > 0)
+			cout << " " << DATA[counter];
+	} // For
+	cout << endl; // Space
+
+	// Stop point
+	Pause();
+	text_colour(f_white, b_black); // Return colour
+} // positive_data(const vector<int>&)
+
+
+/* negative_data(const vector<int>&) - This function will print all the negative data.
+Parameter:
++ DATA - Input data from user.
+*/
+void negative_data(const vector<int> &DATA)
+{
+	// Local variable dictionary:
+	unsigned int num_negative = 0;    // Number of negative data
+
+	// Print negative data
+	text_colour(f_white, b_black); // Colour
+	cout << "There are ";
+	for (size_t counter = 0; counter < DATA.size(); counter++)
+	{
+		if (DATA[counter] < 0)
+			num_negative++;
+	} // For
+	text_colour(f_green, b_black); // Colour
+	cout << num_negative; // Number of negative data
+
+	text_colour(f_white, b_black); // Colour
+	cout << " number of negative data: ";
+	for (size_t counter = 0; counter < DATA.size(); counter++)
+	{
+		text_colour(f_green, b_black); // Colour
+		if (DATA[counter] < 0)
+			cout << " " << DATA[counter];
+	} // For
+	cout << endl; // Space
+
+	// Stop point
+	Pause();
+	text_colour(f_white, b_black); // Return colour
+} // negative_data(const vector<int>&)
+
+
+/* variance(const vector<int>&) - This function will calculate and print the variance.
++ DATA - Input data from user.
+*/
+void variance(const vector<int> &DATA)
+{
+	// Local variable dictionary:
+	double average;             // The average of all data
+	double pre_sum = 0;         // Addtion before divide number of data to get the variance
+
+	// Calculate the average
+	average = ::average(DATA);
+
+	// Calculate pre-variance
+	for (size_t counter = 0; counter < DATA.size(); counter++)
+	{
+		pre_sum += (DATA[counter] - average) * (DATA[counter] - average);
+	} // For
+
+	// Calculate and print the variance
+	text_colour(f_white, b_black); // Colour
+	cout << "The variance is ";
+	anticipation(pre_sum / DATA.size());
+	text_colour(f_white, b_black); // Reset colour
+} // variance(const vector<int>&)
+
+
+/* Check_NumData(void) - This funtion will check and ensure user entered a natural number for number of data.
+*/
+int Check_NumData(void)
+{
+	// Local variable dictionary:
+	int verify_num;                // Ensure the number is legal
+
+	// Get input - Verify number
+	text_colour(f_green, b_black); // Colour
+	cin >> verify_num;
+
+	// Check input - Verify to ensure legal value
+	while (cin.fail() || verify_num <= 0)
+	{
+		// Check if input is a illegal value
+		if (cin.fail())
+			cin.clear(); // Clear error
+		cin.ignore(255, '\n'); // Clean out remainder of input line
+
+		// Get input
+		text_colour(f_red, b_black); // Colour
+		cout << "THE NUMBER OF DATA YOU ENTERED IS ILLEGAL! ";
+		text_colour(f_dred, b_black); // Colour
+		cout << "Please re-enter: ";
+		cin >> verify_num;
+	} // While
+
+	// Return - Verified number
+	text_colour(f_white, b_black); // Return colour
+	return verify_num;
+} // CheckInput_num(void)
+
+
+/* Check_NumData(void) - This funtion will check and ensure user entered an integer for data.
+*/
+int Check_NumInput(void)
+{
+	// Local variable dictionary:
+	int verify_num;                // Ensure the number is legal
+
+	// Get input - Verify number
+	text_colour(f_green, b_black); // Colour
+	cin >> verify_num;
+
+	// Check input - Verify to ensure legal value
+	while (cin.fail())
+	{
+		// Check if input is a illegal value
+		if (cin.fail())
+			cin.clear(); // Clear error
+		cin.ignore(255, '\n'); // Clean out remainder of input line
+
+		// Get input
+		text_colour(f_red, b_black); // Colour
+		cout << "THE DATA YOU ENTERED IS ILLEGAL! ";
+		text_colour(f_dred, b_black); // Colour
+		cout << "Please re-enter: ";
+		cin >> verify_num;
+	} // While
+
+	// Return - Verified number
+	text_colour(f_white, b_black); // Return colour
+	return verify_num;
+} // Check_NumInput(void)
+
+
+/* highest_data(const vector<int>&) - This function will find and print the highest data.
+Parameter:
++ DATA - Input data from user.
+*/
+int highest_data(const vector<int> &DATA)
+{
+	// Local variable dictionary:
+	int highest_data = DATA[0];    // The highest data
+
+	// Check highest data
+	for (size_t counter = 1; counter < DATA.size(); counter++)
+	{
+		// Check if the next data is greater than current data
+		if (DATA[counter] > highest_data)
+			highest_data = DATA[counter];
+	} // For
+
+	// Return - Highest data
+	return highest_data;
+} // highest_data(const vector<int>&)
+
+
+/* lowest_data(const vector<int>&) - This function will find and print the lowest data.
+Parameter:
++ DATA - Input data from user.
+*/
+int lowest_data(const vector<int> &DATA)
+{
+	// Local variable dictionary:
+	int lowest_data = DATA[0];    // The lowest data
+
+	// Check lowest data
+	for (size_t counter = 1; counter < DATA.size(); counter++)
+	{
+		// Check if the next data is greater than current data
+		if (DATA[counter] < lowest_data)
+			lowest_data = DATA[counter];
+	} // For
+
+	// Return - Lowest data
+	return lowest_data;
+} // lowest_data(const vector<int>&)
+
+
+/* average(const vector<int>&) - This function will calculate and print the average of all data.
+Parameter:
++ DATA - Input data from user.
+*/
+double average(const vector<int> &DATA)
+{
+	// Local variable dictionary:
+	int sum = 0;                // The addition total of all data
+
+	// Add all data together
+	for (size_t counter = 0; counter < DATA.size(); counter++)
+		sum += DATA[counter];
+
+	// Return - Average
+	return static_cast<double>(sum) / DATA.size();
+} // average(const vector<int>&)
+
+
+/* Menu(const bool) - This function will print the menu and get user input for option.
+Parameter:
++ DATA_ENTERED: Check if there are any data entered or not.
+*/
+char menu(const bool DATA_ENTERED)
+{
+	// Local variable dictionary
+	char choice;                // Get user run option
+
+	// Warn user if there is no data
+	if (!DATA_ENTERED)
+	{
+		text_colour(f_red, b_black); // Colour
+		cout << "YOU HAVE NOT ENTERED ANY DATA!" << endl;
+	} // If
+
+	// Print menu and get run option from user
+	text_colour(f_white, b_black); // Colour
+	cout << "Please choose one of these options:" << endl;
+	cout << "(E)nter data" << endl;
+	cout << "(H)ighest data" << endl;
+	cout << "(L)owest data" << endl;
+	cout << "(R)ange of data" << endl;
+	cout << "(P)ositive data" << endl;
+	cout << "(N)egative data" << endl;
+	cout << "(A)verage" << endl;
+	cout << "(V)ariance" << endl;
+	cout << "(Q)uit" << endl;
+	text_colour(f_gray, b_black); // Colour
+	cout << "Choice: ";
+	choice = toupper(_getch());
+	text_colour(f_green, b_black); // Colour
+	cout << choice << endl;
+
+	// Varidation
+	while (choice != 'E' && choice != 'H' && choice != 'L' && choice != 'R' && choice != 'P' && choice != 'N' && choice != 'A' && choice != 'V' && choice != 'Q')
+	{
+		cout << endl; // Space
+		text_colour(f_red, b_black); // Colour
+		cout << "INVALID CHOICE! " << endl;
+		text_colour(f_dred, b_black); // Colour
+		cout << "Please enter one of the following options:" << endl;
+		text_colour(f_white, b_black); // Colour
+		cout << "(E)nter data" << endl;
+		cout << "(H)ighest data" << endl;
+		cout << "(L)owest data" << endl;
+		cout << "(R)ange of data" << endl;
+		cout << "(P)ositive data" << endl;
+		cout << "(N)egative data" << endl;
+		cout << "(A)verage" << endl;
+		cout << "(V)ariance" << endl;
+		cout << "(Q)uit" << endl;
+		text_colour(f_dred, b_black); // Colour
+		cout << "Re-enter choice: ";
+		choice = toupper(_getch());
+		text_colour(f_green, b_black); // Colour
+		cout << choice << endl;
+	} // While
+
+	// Return - Choice
+	ClearScreen();
+	text_colour(f_white, b_black); // Reset colour
+	return choice;
+} // menu(const bool)
